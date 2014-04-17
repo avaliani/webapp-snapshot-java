@@ -1,7 +1,7 @@
 Webapp Snapshot Java
 ===========================
 
-This repo enables you to leverage existing web page snapshotting services (post javascript DOM manipulation web page capture) using Java. This is helpful if you have a javascript app (backbone, angular, emberjs, etc,) and want to support search engine / bot crawling.
+This project provides infrastructure to leverage existing web page snapshotting service providers using Java. The web page snapshotting services snapshot the page after executing any Javascript to enable search engines / bots to parse the page (since bots / search engines don't execute javascript). This is helpful if you have a javascript web app (backbone, angular, emberjs, etc,).
 
 There are two parts to this code
 
