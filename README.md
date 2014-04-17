@@ -1,94 +1,92 @@
-Prerender Java [![Build Status](https://travis-ci.org/greengerong/prerender-java.png)](https://travis-ci.org/greengerong/prerender-java)
+Webapp Snapshot Java
 ===========================
 
-Are you using backbone, angular, emberjs, etc, but you're unsure about the SEO implications?
+This repo enables you to leverage existing web page snapshotting services (post javascript DOM manipulation) using Java. This is helpful if you have a javascript app (backbone, angular, emberjs, etc,) and want to support search engine / bot crawling.
 
-Use this java filter that prerenders a javascript-rendered page using an external service and returns the HTML to the search engine crawler for SEO.
+There are two parts to this code
+
+1. A filter that detects if a search-engine / bot is making a request and if so leverages the web page snapshotting service to return a response.
+2. An api to explicitly snapshot your web pages.
+
+The code is based upon https://github.com/greengerong/prerender-java. The ways it deviates from that project are:
+
+* multiple web app snapshotting service support - Built in support for prerender.io and ajaxsnapshots.com.
+* open source project support - it has a token provider api for open source projects that don't want to put their snapshot service token in their web.xml.
+* app engine support - switched from org.apache.httpcomponents to HttpURLConnection to avoid socket read exceptions: http://stackoverflow.com/questions/23103124/unable-to-adjust-socket-timeout-when-using-org-apache-httpcomponents-with-app-en
+* supports explicit snapshotting vs. filter only snapshotting
+
 
 `Note:` If you are using a `#` in your urls, make sure to change it to `#!`. [View Google's ajax crawling protocol](https://developers.google.com/webmasters/ajax-crawling/docs/getting-started)
 
-`Note:` Make sure you have more than one webserver thread/process running because the prerender service will make a request to your server to render the HTML.
+`Note:` Make sure you have more than one webserver thread/process running because the snapshotting service will make a request to your server to render the HTML.
 
-1:Add this line to your web.xml:
+## Filter
 
-    <filter>
-          <filter-name>prerender</filter-name>
-          <filter-class>com.github.greengerong.PreRenderSEOFilter</filter-class>
-          <init-param>
-              <param-name>prerenderServiceUrl</param-name>
-              <param-value>http://localhost:3000</param-value>
-          </init-param>
-          <init-param>
-              <param-name>crawlerUserAgents</param-name>
-              <param-value>me</param-value>
-          </init-param>
-      </filter>
-      <filter-mapping>
-          <filter-name>prerender</filter-name>
-          <url-pattern>/*</url-pattern>
-      </filter-mapping>
+How the filter works:
 
-2:add dependency on your project pom:
-
-    <dependency>
-      <groupId>com.github.greengerong</groupId>
-      <artifactId>prerender-java</artifactId>
-      <version>1.6.2</version>
-    </dependency>
-
-## How it works
-1. Check to make sure we should show a prerendered page
+1. Check if a webpage snapshot is required
 	1. Check if the request is from a crawler (`_escaped_fragment_` or agent string)
 	2. Check to make sure we aren't requesting a resource (js, css, etc...)
 	3. (optional) Check to make sure the url is in the whitelist
 	4. (optional) Check to make sure the url isn't in the blacklist
-2. Make a `GET` request to the [prerender service](https://github.com/collectiveip/prerender)(phantomjs server) for the page's prerendered HTML
-3. Return that HTML to the crawler
-
-## Customization
-
-### crawlerUserAgents
-example: someproxy,someproxy1
-
-### whitelist
-
-### blacklist
+2. If a snapshot is required
+	1. (optional) Invoke *SeoFilterEventHandler.beforeSnapshot* to check if a snapshot is available. If so, use this as the snapshot and skip the remaining steps.
+	2. Make a request to the snapshotting service to get a snapshot.
+	3. (optional) Invoke *SeoFilterEventHandler.afterSnapshot* with the snapshot (for persistence / logging)
+	4. return the snapshot result to the crawler
 
 
-### Using your own prerender service
+To enable the filter install this maven project locally (if requested I will try and put it on maven central)
 
-If you've deployed the prerender service on your own, set the `PRERENDER_SERVICE_URL` environment variable so that this package points there instead. Otherwise, it will default to the service already deployed at `http://prerender.herokuapp.com`
+Modify your pom.xml
 
-	$ export PRERENDER_SERVICE_URL=<new url>
+    <dependency>
+      <groupId>com.github.avaliani.snapshot</groupId>
+      <artifactId>webapp-snapshot-java</artifactId>
+      <version>1.0</version>
+    </dependency>
 
-Or on heroku:
+Mdoify your web.xml (you will probably want to add this filter prior to all other filters)
 
-	$ heroku config:add PRERENDER_SERVICE_URL=<new url>
+    <filter>
+        <filter-name>SeoFilter</filter-name>
+        <filter-class>com.github.avaliani.snapshot.SeoFilter</filter-class>
+        <init-param>
+            <param-name>snapshotService</param-name>
+            <param-value>com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService</param-value>
+        </init-param>
+        <init-param>
+            <param-name>snapshotServiceTokenProvider</param-name>
+            <param-value>{your-token-provider-class-path}</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>SeoFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
-As an alternative, you can pass `prerender_service_url` in the options object during initialization of the middleware
+#### Filter initialization parameters:
 
-``` xml
- config filter init param with "prerenderServiceUrl";
-```
+*Snapshot service parameters:*
 
-### prerender service token
+* **snapshotService** - the snapshotting service. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and *com.github.avaliani.snapshot.PrerenderSnapshotService*. Or you can implement your own.
+* **snapshotServiceToken** - specifies the snapshot service token
+* **snapshotServiceTokenProvider** - used if you want to generate your snapshot service token from a class and not from web.xml. The class must implement *com.github.avaliani.snapshot.SnapshotServiceTokenProvider*
+* **snapshotServiceUrl** - used to specify an explicit url for the snapshotting service. If not specified the default url for the snapshotting service will be used.
 
-If you want to use token with the prerender service, you can config it.
+*Request selection parameters:*
 
+* **crawlerUserAgents** - additional user agents to check for
+* **whitelist** - if set and the request url is not in the whitelist it is not snapshotted
+* **blacklist** - if set and the request url is in the blacklist it is not snapshotted
 
-``` xml
- config filter init param with "prerenderToken";
-```
+*Other parameters:*
 
+* **seoFilterEventHandler** - event handler to be invoked before and after taking snapshots.
 
-### prerender event handler
+## Snapshot API
 
-If you want to cache the caching, analytics, log or others, you can config it. It should be instance of "com.github.greengerong.PreRenderEventHandler"
-
-
-``` xml
- config filter init param with "preRenderEventHandler";
-```
+See *com.github.avaliani.snapshot.SnapshotService* for the API. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and *com.github.avaliani.snapshot.PrerenderSnapshotService*. 
 
 
 ## Testing
