@@ -50,7 +50,7 @@ If requested I will try and put it on maven central.
       <version>1.0</version>
     </dependency>
 
-[3] Mdoify your web.xml (you will probably want to add this filter prior to all other filters)
+[3] Modify your web.xml (you will probably want to add this filter prior to all other filters)
 
     <filter>
         <filter-name>SeoFilter</filter-name>
