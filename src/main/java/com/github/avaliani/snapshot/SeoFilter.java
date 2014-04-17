@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import static com.google.common.collect.FluentIterable.from;
 
 /**
- * Conditionally returns snapshotted versions of pages requested by the client to enabled
+ * Conditionally returns snapshotted versions of requested pages to enable
  * search engines / bots to parse pages that primarily have javascript content.
  *
  * @author avaliani
