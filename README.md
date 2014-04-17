@@ -1,7 +1,7 @@
 Webapp Snapshot Java
 ===========================
 
-This repo enables you to leverage existing web page snapshotting services (post javascript DOM manipulation) using Java. This is helpful if you have a javascript app (backbone, angular, emberjs, etc,) and want to support search engine / bot crawling.
+This repo enables you to leverage existing web page snapshotting services (post javascript DOM manipulation web page capture) using Java. This is helpful if you have a javascript app (backbone, angular, emberjs, etc,) and want to support search engine / bot crawling.
 
 There are two parts to this code
 
@@ -10,7 +10,7 @@ There are two parts to this code
 
 The code is based upon https://github.com/greengerong/prerender-java. The ways it deviates from that project are:
 
-* multiple web app snapshotting service support - Built in support for prerender.io and ajaxsnapshots.com.
+* multiple web app snapshotting service support - Built in support for prerender.io and ajaxsnapshots.com. Or you can add support for another service.
 * open source project support - it has a token provider api for open source projects that don't want to put their snapshot service token in their web.xml.
 * app engine support - switched from org.apache.httpcomponents to HttpURLConnection to avoid socket read exceptions: http://stackoverflow.com/questions/23103124/unable-to-adjust-socket-timeout-when-using-org-apache-httpcomponents-with-app-en
 * supports explicit snapshotting vs. filter only snapshotting
@@ -22,7 +22,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 
 ## Filter
 
-How the filter works:
+#### How the filter works:
 
 1. Check if a webpage snapshot is required
 	1. Check if the request is from a crawler (`_escaped_fragment_` or agent string)
@@ -36,9 +36,13 @@ How the filter works:
 	4. return the snapshot result to the crawler
 
 
-To enable the filter install this maven project locally (if requested I will try and put it on maven central)
+#### Installing the filter 
 
-Modify your pom.xml
+[1] Add the jar files++ to your project. Right now I'm using "mvn install" to install the jars locally. And then "mvn install:install-file" to add the jar files to my dependent maven project. (Let me know if there is a better way)
+
+If requested I will try and put it on maven central.
+
+[2] Modify your pom.xml
 
     <dependency>
       <groupId>com.github.avaliani.snapshot</groupId>
@@ -46,7 +50,7 @@ Modify your pom.xml
       <version>1.0</version>
     </dependency>
 
-Mdoify your web.xml (you will probably want to add this filter prior to all other filters)
+[3] Mdoify your web.xml (you will probably want to add this filter prior to all other filters)
 
     <filter>
         <filter-name>SeoFilter</filter-name>
@@ -69,7 +73,7 @@ Mdoify your web.xml (you will probably want to add this filter prior to all othe
 
 *Snapshot service parameters:*
 
-* **snapshotService** - the snapshotting service. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and *com.github.avaliani.snapshot.PrerenderSnapshotService*. Or you can implement your own.
+* **snapshotService** - the snapshotting service. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and (2) *com.github.avaliani.snapshot.PrerenderSnapshotService*. Or you can implement your own.
 * **snapshotServiceToken** - specifies the snapshot service token
 * **snapshotServiceTokenProvider** - used if you want to generate your snapshot service token from a class and not from web.xml. The class must implement *com.github.avaliani.snapshot.SnapshotServiceTokenProvider*
 * **snapshotServiceUrl** - used to specify an explicit url for the snapshotting service. If not specified the default url for the snapshotting service will be used.
@@ -86,7 +90,7 @@ Mdoify your web.xml (you will probably want to add this filter prior to all othe
 
 ## Snapshot API
 
-See *com.github.avaliani.snapshot.SnapshotService* for the API. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and *com.github.avaliani.snapshot.PrerenderSnapshotService*. 
+See *com.github.avaliani.snapshot.SnapshotService* for the API. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and (2) *com.github.avaliani.snapshot.PrerenderSnapshotService*. 
 
 
 ## Testing
