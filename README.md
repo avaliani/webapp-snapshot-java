@@ -74,6 +74,8 @@ If requested I will try and put it on maven central.
 *Snapshot service parameters:*
 
 * **snapshotService** - the snapshotting service. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and (2) *com.github.avaliani.snapshot.PrerenderSnapshotService*. Or you can implement your own.
+* **snapshotServiceOptions** - service specific options as comma seperated optionName and optionValue pairs, e.g. "X-AJS-SNAP-TIME=2000,{OptionName2}={OptionValue2}"
+	* AjaxSnapshotsSnapshotService supported options: "X-AJS-SNAP-TIME". See [option documentation](https://ajaxsnapshots.com/apidocs)
 * **snapshotServiceToken** - specifies the snapshot service token
 * **snapshotServiceTokenProvider** - used if you want to generate your snapshot service token from a class and not from web.xml. The class must implement *com.github.avaliani.snapshot.SnapshotServiceTokenProvider*
 * **snapshotServiceUrl** - used to specify an explicit url for the snapshotting service. If not specified the default url for the snapshotting service will be used.
@@ -86,6 +88,7 @@ If requested I will try and put it on maven central.
 
 *Other parameters:*
 
+* **loggingLevel** - java logging Level at which to write logs. Default logging level is FINE.
 * **seoFilterEventHandler** - event handler to be invoked before and after taking snapshots.
 
 ## Snapshot API
