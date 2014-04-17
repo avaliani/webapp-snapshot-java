@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -37,17 +38,17 @@ import static com.google.common.collect.FluentIterable.from;
  */
 public class SeoFilter implements Filter {
 
-    public static final Level LOG_LEVEL = Level.INFO;
-    private final static java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(SeoFilter.class.getName());
+    private static final Logger log = Logger.getLogger(SeoFilter.class.getName());
 
     private SnapshotService snapshotService;
     private SeoFilterEventHandler seoFilterEventHandler;
     private SeoFilterConfig seoFilterConfig;
+    private Level logLevel;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.seoFilterConfig = new SeoFilterConfig(filterConfig);
+        seoFilterConfig = new SeoFilterConfig(filterConfig);
+        logLevel = seoFilterConfig.getLoggingLevel();
     }
 
     @Override
@@ -193,6 +194,7 @@ public class SeoFilter implements Filter {
     public void destroy() {
         snapshotService = null;
         seoFilterConfig = null;
+        logLevel = null;
         if (seoFilterEventHandler != null) {
             seoFilterEventHandler.destroy();
             seoFilterEventHandler = null;
@@ -204,51 +206,51 @@ public class SeoFilter implements Filter {
         final String url = request.getRequestURL().toString();
         final String referer = request.getHeader("Referer");
 
-        log.log(LOG_LEVEL, "checking request for " + url + " from User-Agent " + userAgent + " and referer " + referer);
+        log.log(logLevel, "checking request for " + url + " from User-Agent " + userAgent + " and referer " + referer);
 
         if (snapshotService.isSnapshotRequest(request)) {
-            log.log(LOG_LEVEL, "Request is a snapshot request; intercept: no");
+            log.log(logLevel, "Request is a snapshot request; intercept: no");
             return false;
         }
 
         if (!HttpGet.METHOD_NAME.equals(request.getMethod())) {
-            log.log(LOG_LEVEL, "Request is not HTTP GET; intercept: no");
+            log.log(logLevel, "Request is not HTTP GET; intercept: no");
             return false;
         }
 
         if (isInResources(url)) {
-            log.log(LOG_LEVEL, "Request is for a (static) resource; intercept: no");
+            log.log(logLevel, "Request is for a (static) resource; intercept: no");
             return false;
         }
 
         final List<String> whiteList = seoFilterConfig.getWhitelist();
         if (whiteList != null && !isInWhiteList(url, whiteList)) {
-            log.log(LOG_LEVEL, "Whitelist is enabled, but this request is not listed; intercept: no");
+            log.log(logLevel, "Whitelist is enabled, but this request is not listed; intercept: no");
             return false;
         }
 
         final List<String> blacklist = seoFilterConfig.getBlacklist();
         if (blacklist != null && isInBlackList(url, referer, blacklist)) {
-            log.log(LOG_LEVEL, "Blacklist is enabled, and this request is listed; intercept: no");
+            log.log(logLevel, "Blacklist is enabled, and this request is listed; intercept: no");
             return false;
         }
 
         if (hasEscapedFragment(request)) {
-            log.log(LOG_LEVEL, "Request Has _escaped_fragment_; intercept: yes");
+            log.log(logLevel, "Request Has _escaped_fragment_; intercept: yes");
             return true;
         }
 
         if (StringUtils.isBlank(userAgent)) {
-            log.log(LOG_LEVEL, "Request has blank userAgent; intercept: no");
+            log.log(logLevel, "Request has blank userAgent; intercept: no");
             return false;
         }
 
         if (!isInSearchUserAgent(userAgent)) {
-            log.log(LOG_LEVEL, "Request User-Agent is not a search bot; intercept: no");
+            log.log(logLevel, "Request User-Agent is not a search bot; intercept: no");
             return false;
         }
 
-        log.log(LOG_LEVEL, String.format("Defaulting to request intercept(user-agent=%s): yes", userAgent));
+        log.log(logLevel, String.format("Defaulting to request intercept(user-agent=%s): yes", userAgent));
         return true;
     }
 

@@ -5,8 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.servlet.FilterConfig;
@@ -14,10 +12,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.Map;
 
 public class SeoFilterConfig {
-    private final static Logger log = LoggerFactory.getLogger(SeoFilterConfig.class);
+    private static final Level DEFAULT_LOGGING_LEVEL = Level.FINE;
+
     private FilterConfig filterConfig;
 
     public SeoFilterConfig(FilterConfig filterConfig) {
@@ -51,7 +51,7 @@ public class SeoFilterConfig {
             try {
                 return (SeoFilterEventHandler) Class.forName(seoFilterEventHandler).newInstance();
             } catch (Exception e) {
-                log.error("SEOFilterEventHandler class not found or can not create a new instance", e);
+                throw new RuntimeException("SeoFilterEventHandler class not found", e);
             }
         }
         return null;
@@ -97,9 +97,22 @@ public class SeoFilterConfig {
         return null;
     }
 
+    public Level getLoggingLevel() {
+        String loggingLevel = filterConfig.getInitParameter("loggingLevel");
+        if (loggingLevel != null) {
+            try {
+                return Level.parse(loggingLevel);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Unable to parse 'loggingLevel' parameter", e);
+            }
+        }
+        return DEFAULT_LOGGING_LEVEL;
+    }
+
     private class SnapshotServiceConfigImpl implements SnapshotServiceConfig {
         private final String requestScheme;
         private SnapshotServiceTokenProvider serviceTokenProvider;
+        private Map<String, String> options;
 
         public SnapshotServiceConfigImpl(HttpServletRequest request) {
             requestScheme = request.getScheme();
@@ -148,8 +161,32 @@ public class SeoFilterConfig {
 
         @Override
         public Map<String, String> getOptions() {
-            return Maps.newHashMap();
+            initOptions();
+            return options;
         }
 
+        private void initOptions() {
+            if (options == null) {
+                options = Maps.newHashMap();
+                String optionsStr = filterConfig.getInitParameter("snapshotServiceOptions");
+                if (optionsStr != null) {
+                    String[] optionNameValuePairs = optionsStr.trim().split(",");
+                    for (String optionNameValuePair : optionNameValuePairs) {
+                        String[] parsedNameValuePair = optionNameValuePair.trim().split("=", 2);
+                        String optionName = parsedNameValuePair[0].trim();
+                        String optionValue = ((parsedNameValuePair.length == 2) ?
+                                parsedNameValuePair[1].trim() : "");
+                        if (StringUtils.isNotBlank(optionName)) {
+                            options.put(optionName, optionValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public Level getLoggingLevel() {
+            return SeoFilterConfig.this.getLoggingLevel();
+        }
     }
 }

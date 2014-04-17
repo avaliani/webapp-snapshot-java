@@ -1,7 +1,5 @@
 package com.github.avaliani.snapshot;
 
-import static com.github.avaliani.snapshot.SeoFilter.LOG_LEVEL;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -10,19 +8,23 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 
 public abstract class BaseSnapshotService implements SnapshotService {
 
-    final static java.util.logging.Logger log =
-            java.util.logging.Logger.getLogger(BaseSnapshotService.class.getName());
+    private static final Logger log = Logger.getLogger(BaseSnapshotService.class.getName());
 
     protected SnapshotServiceConfig config;
+
+    protected Level logLevel;
 
     @Override
     public final void init(SnapshotServiceConfig config) {
         this.config = config;
+        logLevel = config.getLoggingLevel();
     }
 
     public final String getSnapshotServiceUrl() {
@@ -48,9 +50,11 @@ public abstract class BaseSnapshotService implements SnapshotService {
        public abstract String getSnapshotRequestUrl(String requestUrl);
 
        @Override
-    public final SnapshotResult snapshot(String urlToSnapshot, Map<String, List<String>> headers) throws IOException {
+    public final SnapshotResult snapshot(String urlToSnapshot, Map<String, List<String>> headers)
+            throws IOException {
+        log.log(logLevel, "About to snapshot requested url: " + urlToSnapshot);
+
         final String apiUrl = getSnapshotRequestUrl(urlToSnapshot);
-        log.log(LOG_LEVEL, String.format("Prerender proxy will send request to:%s", apiUrl));
 
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -59,17 +63,14 @@ public abstract class BaseSnapshotService implements SnapshotService {
         copyRequestHeaders(connection, getSnapshotRequestHeaders(urlToSnapshot));
         connection.setReadTimeout(60 * 1000);
 
-        log.log(LOG_LEVEL, "Pre-render service making request:\n");
         dump(connection);
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            log.log(LOG_LEVEL, "SUCCESS: Pre-render service response:\n");
-            dumpResponse(connection, false);
+            dumpResponse(connection, "SUCCESS: snapshotting was successful", false);
 
             return new SnapshotResult(getResponse(connection), getResponseHeaders(connection));
         } else {
-            log.log(LOG_LEVEL, "ERROR: Pre-render service response:\n");
-            dumpResponse(connection, true);
+            dumpResponse(connection, "ERROR: snapshotting failed", true);
             return null;
         }
 
@@ -100,29 +101,39 @@ public abstract class BaseSnapshotService implements SnapshotService {
     }
 
 
-    private static void dump(HttpURLConnection connection) {
-        StringBuilder output = new StringBuilder();
-        output.append("  " + connection + "\n");
-        Map<String,List<String>> headers = connection.getRequestProperties();
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            output.append("    " + header.getKey() + " : " + mergeHeaderValues(header.getValue()) + "\n");
+    private void dump(HttpURLConnection connection) {
+        if (log.isLoggable(logLevel)) {
+            StringBuilder output = new StringBuilder();
+            output.append("  GET " + connection.getURL() + "\n");
+            Map<String,List<String>> headers = connection.getRequestProperties();
+            for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+                output.append("    " + header.getKey() + " : " + mergeHeaderValues(header.getValue()) + "\n");
+            }
+            log.log(logLevel, output.toString());
         }
-        log.log(LOG_LEVEL, output.toString());
     }
 
-    private static void dumpResponse(HttpURLConnection connection, boolean dumpContent) throws IOException {
-        StringBuilder output = new StringBuilder();
-        output.append("  " + connection.getResponseMessage() + "\n");
-        Map<String,List<String>> headers = connection.getHeaderFields();
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            output.append("    " + header.getKey() + " : " + mergeHeaderValues(header.getValue()) + "\n");
+    private void dumpResponse(HttpURLConnection connection, String outputHeader,
+            boolean dumpContent) throws IOException {
+        if (log.isLoggable(logLevel)) {
+            StringBuilder output = new StringBuilder();
+            output.append(outputHeader + "\n");
+            output.append("  RESPONSE " + connection.getResponseCode() + " " +
+                    connection.getResponseMessage() + "\n");
+            Map<String,List<String>> headers = connection.getHeaderFields();
+            for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+                output.append("    " + header.getKey() + " : " +
+                        mergeHeaderValues(header.getValue()) + "\n");
+            }
+            if (dumpContent) {
+                output.append(">>>>> CONTENT START >>>>\n");
+                StringWriter respWriter = new StringWriter();
+                IOUtils.copy(connection.getInputStream(), respWriter);
+                output.append(respWriter.toString());
+                output.append("\n>>>>> CONTENT END >>>>\n");
+            }
+            log.log(logLevel, output.toString());
         }
-        if (dumpContent) {
-            StringWriter respWriter = new StringWriter();
-            IOUtils.copy(connection.getInputStream(), respWriter);
-            output.append(respWriter.toString());
-        }
-        log.log(LOG_LEVEL, output.toString());
     }
 
     private static String mergeHeaderValues(List<String> headerValues) {

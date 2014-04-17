@@ -43,8 +43,10 @@ public class AjaxSnapshotsSnapshotService extends BaseSnapshotService {
         // TODO(avaliani): file bug. This didn't work.
         // proxyRequest.addHeader("X-AJS-URL", incomingRequestUrl);
 
-        // TODO(avaliani): make this a configurable option.
-        headers.put("X-AJS-SNAP-TIME", Lists.newArrayList("5000"));
+        String snapTime = config.getOptions().get("X-AJS-SNAP-TIME");
+        if (snapTime != null) {
+            headers.put("X-AJS-SNAP-TIME", Lists.newArrayList(snapTime));
+        }
 
         return headers;
     }

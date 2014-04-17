@@ -1,6 +1,7 @@
 package com.github.avaliani.snapshot;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
@@ -36,4 +37,9 @@ public interface SnapshotServiceConfig {
      * @return snapshot service specific options.
      */
     Map<String, String> getOptions();
+
+    /**
+     * @return the level at which all debug logs should be written.
+     */
+    Level getLoggingLevel();
 }
