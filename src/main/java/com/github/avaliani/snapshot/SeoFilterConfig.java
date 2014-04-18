@@ -109,6 +109,19 @@ public class SeoFilterConfig {
         return DEFAULT_LOGGING_LEVEL;
     }
 
+    public boolean forwardRequestsUsingLocalPort() {
+        String val = filterConfig.getInitParameter("forwardRequestsUsingLocalPort");
+        if ((val != null)) {
+            try {
+                return Boolean.parseBoolean(val);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(
+                        "Unable to parse 'forwardRequestsUsingLocalPort' parameter", e);
+            }
+        }
+        return false;
+    }
+
     private class SnapshotServiceConfigImpl implements SnapshotServiceConfig {
         private final String requestScheme;
         private SnapshotServiceTokenProvider serviceTokenProvider;
