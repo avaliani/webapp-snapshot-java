@@ -33,6 +33,7 @@ import static com.google.common.collect.FluentIterable.from;
  * Conditionally returns snapshotted versions of requested pages to enable
  * search engines / bots to parse pages that primarily have javascript content.
  *
+ * @author greengerong
  * @author avaliani
  *
  */
@@ -180,8 +181,29 @@ public class SeoFilter implements Filter {
         }
     }
 
+    private String getUrl(HttpServletRequest request) {
+        // The local port option is to work around an issue in the App Engine dev server env
+        // where the incoming serverPort and request url would not show the actual port being
+        // listened on and would instead show the default port for the request url's scheme.
+        // This fix does not work on production app engine since on production getLocalPort
+        // returns zero. But luckily in production we use the default http / https ports.
+        if ( seoFilterConfig.forwardRequestsUsingLocalPort() &&
+             (request.getLocalPort() != 0) ) {
+            int localPort = request.getLocalPort();
+            String scheme = request.getScheme();
+            String url = scheme + "://" + request.getServerName();
+            if ((scheme.equals("http") && (localPort != 80)) ||
+                (scheme.equals("https") && (localPort != 443))) {
+                url += ":" + localPort;
+            }
+            return url + request.getRequestURI();
+        } else {
+            return request.getRequestURL().toString();
+        }
+    }
+
     private String getFullUrl(HttpServletRequest request) {
-        final StringBuffer url = request.getRequestURL();
+        final StringBuilder url = new StringBuilder(getUrl(request));
         final String queryString = request.getQueryString();
         if (queryString != null) {
             url.append('?');
@@ -203,10 +225,13 @@ public class SeoFilter implements Filter {
 
     private boolean shouldShowPageSnapshot(HttpServletRequest request) throws URISyntaxException {
         final String userAgent = request.getHeader("User-Agent");
-        final String url = request.getRequestURL().toString();
+        final String url = getUrl(request);
         final String referer = request.getHeader("Referer");
 
-        log.log(logLevel, "checking request for " + url + " from User-Agent " + userAgent + " and referer " + referer);
+        log.log(logLevel, "checking request " + getFullUrl(request) +
+                " (serverPort: " + request.getServerPort() +
+                ", localPort: " + request.getLocalPort() +")" +
+                " from User-Agent " + userAgent + " and referer " + referer);
 
         if (snapshotService.isSnapshotRequest(request)) {
             log.log(logLevel, "Request is a snapshot request; intercept: no");
