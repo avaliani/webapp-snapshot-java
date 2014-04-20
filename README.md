@@ -20,9 +20,9 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 
 `Note:` Make sure you have more than one webserver thread/process running because the snapshotting service will make a request to your server to render the HTML.
 
-## Filter
+## Middleware / Servlet Filter
 
-#### How the middleware / servlet filter works:
+#### How the servlet filter works:
 
 1. Check if a webpage snapshot is required
 	1. Check if the request is from a crawler (`_escaped_fragment_` or agent string)
@@ -36,7 +36,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 	4. return the snapshot result to the crawler
 
 
-#### Installing the middleware / servlet filter 
+#### Installing the servlet filter 
 
 [1] Add the jar files++ to your project. Right now I'm using "mvn install" to install the jars locally. And then "mvn install:install-file" to add the jar files to my dependent maven project. (Let me know if there is a better way)
 
