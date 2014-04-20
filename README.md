@@ -71,7 +71,7 @@ If requested I will try and put it on maven central.
 
 #### Filter initialization parameters:
 
-All parameters are optional. By default *AjaxSnapshotsSnapshotService* is used as the snapshotService.
+All parameters are optional except the parameter used to specify the snapshot service token: *snapshotServiceToken* or *snapshotServiceTokenProvider*. By default *AjaxSnapshotsSnapshotService* is used as the snapshotService.
 
 *Snapshot service parameters:*
 
