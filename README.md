@@ -1,7 +1,7 @@
 Webapp Snapshot Java
 ===========================
 
-This project contains a Java middleware implementation and a direct invocation api to leverage existing web page snapshotting service providers. The web page snapshotting services snapshot a web page after executing any Javascript to enable search engines / bots to parse the post-javascript rendered page (since bots / search engines don't execute javascript). This is helpful if you have a javascript web app (backbone, angular, emberjs, etc,).
+This project contains a Java middleware implementation and a direct invocation api to leverage existing web page snapshotting service providers. The web page snapshotting services snapshot a web page after executing any Javascript to enable search engines / bots to parse the post-javascript rendered page (since bots / search engines don't execute javascript). This is helpful if you have a javascript web app (backbone, angular, emberjs, etc.)
 
 There are two parts to this code
 
