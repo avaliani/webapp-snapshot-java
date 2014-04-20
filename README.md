@@ -71,6 +71,8 @@ If requested I will try and put it on maven central.
 
 #### Filter initialization parameters:
 
+All parameters are optional. By default *AjaxSnapshotsSnapshotService* is used as the snapshotService.
+
 *Snapshot service parameters:*
 
 * **snapshotService** - the snapshotting service. Two built in services are available: (1) *com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService* and (2) *com.github.avaliani.snapshot.PrerenderSnapshotService*. Or you can implement your own.
