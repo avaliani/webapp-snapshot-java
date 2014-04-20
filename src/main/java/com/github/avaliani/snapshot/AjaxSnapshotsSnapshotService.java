@@ -17,35 +17,27 @@ import com.google.common.collect.Maps;
 public class AjaxSnapshotsSnapshotService extends BaseSnapshotService {
 
     // TODO(avaliani): debugging therefore using http
-    public static final String DEFAULT_SNAPSHOT_SERVICE_URL = "http://api.ajaxsnapshots.com/makeSnapshot";
+    public static final String DEFAULT_SERVICE_URL = "http://api.ajaxsnapshots.com/makeSnapshot";
 
     @Override
-    public String getDefaultSnapshotServiceUrl() {
-        return DEFAULT_SNAPSHOT_SERVICE_URL;
+    public String getDefaultServiceUrl() {
+        return DEFAULT_SERVICE_URL;
     }
 
     @Override
-       public String getSnapshotRequestUrl(String requestUrl) {
-        String baseUrl = getSnapshotServiceUrl();
+    public String getRequestUrl(String requestUrl) {
+        String baseUrl = getServiceUrl();
         baseUrl += "?url=" + encodeURIComponent(requestUrl);
         return baseUrl;
-       }
+    }
 
     @Override
-    public Map<String, List<String>> getSnapshotRequestHeaders(String requestUrl) {
+    public Map<String, List<String>> getRequestHeaders(String requestUrl) {
         Map<String, List<String>> headers = Maps.newHashMap();
 
         String serviceToken = config.getServiceToken();
         if (serviceToken != null) {
             headers.put("X-AJS-APIKEY", Lists.newArrayList(serviceToken));
-        }
-
-        // TODO(avaliani): file bug. This didn't work.
-        // proxyRequest.addHeader("X-AJS-URL", incomingRequestUrl);
-
-        String snapTime = config.getOptions().get("X-AJS-SNAP-TIME");
-        if (snapTime != null) {
-            headers.put("X-AJS-SNAP-TIME", Lists.newArrayList(snapTime));
         }
 
         return headers;

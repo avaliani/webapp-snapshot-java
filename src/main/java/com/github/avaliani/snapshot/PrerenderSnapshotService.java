@@ -22,24 +22,24 @@ public class PrerenderSnapshotService extends BaseSnapshotService {
      */
 
     // TODO(avaliani): debugging therefore using http
-    public static final String DEFAULT_SNAPSHOT_SERVICE_URL = "http://service.prerender.io/";
+    public static final String DEFAULT_SERVICE_URL = "http://service.prerender.io/";
 
     @Override
-    public String getDefaultSnapshotServiceUrl() {
-        return DEFAULT_SNAPSHOT_SERVICE_URL;
+    public String getDefaultServiceUrl() {
+        return DEFAULT_SERVICE_URL;
     }
 
     @Override
-       public String getSnapshotRequestUrl(String requestUrl) {
-        String prerenderServiceUrl = getSnapshotServiceUrl();
+    public String getRequestUrl(String requestUrl) {
+        String prerenderServiceUrl = getServiceUrl();
         if (!prerenderServiceUrl.endsWith("/")) {
             prerenderServiceUrl += "/";
         }
         return prerenderServiceUrl + requestUrl;
-       }
+    }
 
     @Override
-    public Map<String, List<String>> getSnapshotRequestHeaders(String requestUrl) {
+    public Map<String, List<String>> getRequestHeaders(String requestUrl) {
         Map<String, List<String>> headers = Maps.newHashMap();
 
         String serviceToken = config.getServiceToken();

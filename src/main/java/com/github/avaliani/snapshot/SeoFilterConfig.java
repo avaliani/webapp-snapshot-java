@@ -125,7 +125,7 @@ public class SeoFilterConfig {
     private class SnapshotServiceConfigImpl implements SnapshotServiceConfig {
         private final String requestScheme;
         private SnapshotServiceTokenProvider serviceTokenProvider;
-        private Map<String, String> options;
+        private Map<String, List<String>> requestHeaders;
 
         public SnapshotServiceConfigImpl(HttpServletRequest request) {
             requestScheme = request.getScheme();
@@ -173,24 +173,24 @@ public class SeoFilterConfig {
         }
 
         @Override
-        public Map<String, String> getOptions() {
-            initOptions();
-            return options;
+        public Map<String, List<String>> getRequestHeaders() {
+            initRequestHeaders();
+            return requestHeaders;
         }
 
-        private void initOptions() {
-            if (options == null) {
-                options = Maps.newHashMap();
-                String optionsStr = filterConfig.getInitParameter("snapshotServiceOptions");
+        private void initRequestHeaders() {
+            if (requestHeaders == null) {
+                requestHeaders = Maps.newHashMap();
+                String optionsStr = filterConfig.getInitParameter("snapshotServiceHeaders");
                 if (optionsStr != null) {
-                    String[] optionNameValuePairs = optionsStr.trim().split(",");
+                    String[] optionNameValuePairs = optionsStr.trim().split(";");
                     for (String optionNameValuePair : optionNameValuePairs) {
                         String[] parsedNameValuePair = optionNameValuePair.trim().split("=", 2);
                         String optionName = parsedNameValuePair[0].trim();
                         String optionValue = ((parsedNameValuePair.length == 2) ?
                                 parsedNameValuePair[1].trim() : "");
                         if (StringUtils.isNotBlank(optionName)) {
-                            options.put(optionName, optionValue);
+                            requestHeaders.put(optionName, Lists.newArrayList(optionValue));
                         }
                     }
                 }
