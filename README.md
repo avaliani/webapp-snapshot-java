@@ -1,11 +1,11 @@
 Webapp Snapshot Java
 ===========================
 
-This project provides infrastructure to leverage existing web page snapshotting service providers using Java. The web page snapshotting services snapshot the page after executing any Javascript to enable search engines / bots to parse the page (since bots / search engines don't execute javascript). This is helpful if you have a javascript web app (backbone, angular, emberjs, etc,).
+This project contains a Java middleware implementation and a direct invocation api to leverage existing web page snapshotting service providers. The web page snapshotting services snapshot a web page after executing any Javascript to enable search engines / bots to parse the post-javascript rendered page (since bots / search engines don't execute javascript). This is helpful if you have a javascript web app (backbone, angular, emberjs, etc,).
 
 There are two parts to this code
 
-1. A filter that detects if a search-engine / bot is making a request and if so leverages the web page snapshotting service to return a response.
+1. Java middleware implemented by a servlet filter that detects if a search-engine / bot is making a request and if so leverages the web page snapshotting service to return a response.
 2. An api to explicitly snapshot your web pages.
 
 The code is based upon https://github.com/greengerong/prerender-java. The ways it deviates from that project are:
@@ -22,7 +22,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 
 ## Filter
 
-#### How the filter works:
+#### How the middleware / servlet filter works:
 
 1. Check if a webpage snapshot is required
 	1. Check if the request is from a crawler (`_escaped_fragment_` or agent string)
@@ -36,7 +36,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 	4. return the snapshot result to the crawler
 
 
-#### Installing the filter 
+#### Installing the middleware / servlet filter 
 
 [1] Add the jar files++ to your project. Right now I'm using "mvn install" to install the jars locally. And then "mvn install:install-file" to add the jar files to my dependent maven project. (Let me know if there is a better way)
 
@@ -69,7 +69,7 @@ If requested I will try and put it on maven central.
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-#### Filter initialization parameters:
+#### Servlet filter initialization parameters:
 
 All parameters are optional except the parameter used to specify the snapshot service token: *snapshotServiceToken* or *snapshotServiceTokenProvider*. By default *AjaxSnapshotsSnapshotService* is used as the snapshotService.
 
