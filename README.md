@@ -13,7 +13,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 * multiple web app snapshotting service support - built in support for prerender.io and ajaxsnapshots.com. Or you can add support for another service.
 * open source project support - it has a token provider api for open source projects that don't want to put their snapshot service token in their web.xml.
 * app engine support - switched from org.apache.httpcomponents to HttpURLConnection to avoid socket read exceptions: http://stackoverflow.com/questions/23103124/unable-to-adjust-socket-timeout-when-using-org-apache-httpcomponents-with-app-en
-* supports explicit snapshotting vs. filter only snapshotting
+* supports explicit snapshotting in addition to servlet filter snapshotting
 
 
 `Note:` If you are using a `#` in your urls, make sure to change it to `#!`. [View Google's ajax crawling protocol](https://developers.google.com/webmasters/ajax-crawling/docs/getting-started)
