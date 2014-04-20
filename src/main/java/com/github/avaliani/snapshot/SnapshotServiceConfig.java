@@ -1,5 +1,6 @@
 package com.github.avaliani.snapshot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -28,15 +29,15 @@ public interface SnapshotServiceConfig {
     String getServiceUrl();
 
     /**
-     * @return the scheme used to connect to the snapshotting service:
+     * @return the scheme to use when making a snapshot service request:
      *     "http" or "https".
      */
     String getRequestScheme();
 
     /**
-     * @return snapshot service specific options.
+     * @return the headers to use when making a snapshot service request.
      */
-    Map<String, String> getOptions();
+    Map<String, List<String>> getRequestHeaders();
 
     /**
      * @return the level at which all debug logs should be written.

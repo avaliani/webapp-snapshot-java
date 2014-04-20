@@ -27,9 +27,9 @@ public abstract class BaseSnapshotService implements SnapshotService {
         logLevel = config.getLoggingLevel();
     }
 
-    public final String getSnapshotServiceUrl() {
+    public final String getServiceUrl() {
         String configUrl = config.getServiceUrl();
-        String serviceUrl = (configUrl == null) ? getDefaultSnapshotServiceUrl() : configUrl;
+        String serviceUrl = (configUrl == null) ? getDefaultServiceUrl() : configUrl;
         return config.getRequestScheme() + "://" + stripUrlScheme(serviceUrl);
     }
 
@@ -43,24 +43,25 @@ public abstract class BaseSnapshotService implements SnapshotService {
         }
     }
 
-    public abstract Map<String, List<String>> getSnapshotRequestHeaders(String incomingRequestUrl);
+    public abstract String getDefaultServiceUrl();
 
-    public abstract String getDefaultSnapshotServiceUrl();
+    public abstract String getRequestUrl(String requestUrl);
 
-       public abstract String getSnapshotRequestUrl(String requestUrl);
+    public abstract Map<String, List<String>> getRequestHeaders(String requestUrl);
 
-       @Override
+    @Override
     public final SnapshotResult snapshot(String urlToSnapshot, Map<String, List<String>> headers)
             throws IOException {
         log.log(logLevel, "About to snapshot requested url: " + urlToSnapshot);
 
-        final String apiUrl = getSnapshotRequestUrl(urlToSnapshot);
+        final String apiUrl = getRequestUrl(urlToSnapshot);
 
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         copyRequestHeaders(connection, headers);
-        copyRequestHeaders(connection, getSnapshotRequestHeaders(urlToSnapshot));
+        copyRequestHeaders(connection, getRequestHeaders(urlToSnapshot));
+        copyRequestHeaders(connection, config.getRequestHeaders());
         connection.setReadTimeout(60 * 1000);
 
         dump(connection);
