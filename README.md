@@ -8,7 +8,7 @@ There are two parts to this code
 1. Java middleware implemented by a servlet filter that detects if a search-engine / bot is making a request and if so leverages the web page snapshotting service to return a response.
 2. An api to explicitly snapshot your web pages.
 
-The code is based upon https://github.com/greengerong/prerender-java. The ways it deviates from that project are:
+The code is based upon https://github.com/greengerong/prerender-java. The ways it differs from that project are:
 
 * multiple web app snapshotting service support - built in support for prerender.io and ajaxsnapshots.com. Or you can add support for another service.
 * open source project support - it has a token provider api for open source projects that don't want to put their snapshot service token in their web.xml.
