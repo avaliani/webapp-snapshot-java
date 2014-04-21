@@ -2,10 +2,9 @@ package com.github.avaliani.snapshot;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -27,7 +26,7 @@ public abstract class BaseSnapshotService implements SnapshotService {
         logLevel = config.getLoggingLevel();
     }
 
-    public final String getServiceUrl() {
+    protected String getServiceUrl() {
         String configUrl = config.getServiceUrl();
         String serviceUrl = (configUrl == null) ? getDefaultServiceUrl() : configUrl;
         return config.getRequestScheme() + "://" + stripUrlScheme(serviceUrl);
@@ -43,11 +42,11 @@ public abstract class BaseSnapshotService implements SnapshotService {
         }
     }
 
-    public abstract String getDefaultServiceUrl();
+    protected abstract String getDefaultServiceUrl();
 
-    public abstract String getRequestUrl(String requestUrl);
+    protected abstract String getRequestUrl(String requestUrl);
 
-    public abstract Map<String, List<String>> getRequestHeaders(String requestUrl);
+    protected abstract Map<String, List<String>> getRequestHeaders(String requestUrl);
 
     @Override
     public final SnapshotResult snapshot(String urlToSnapshot, Map<String, List<String>> headers)
@@ -62,19 +61,24 @@ public abstract class BaseSnapshotService implements SnapshotService {
         copyRequestHeaders(connection, headers);
         copyRequestHeaders(connection, getRequestHeaders(urlToSnapshot));
         copyRequestHeaders(connection, config.getRequestHeaders());
-        connection.setReadTimeout(60 * 1000);
+        // Explicitly set an ifinite timeout.
+        connection.setReadTimeout(0);
 
-        dump(connection);
+        dumpRequest(connection);
 
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            dumpResponse(connection, "SUCCESS: snapshotting was successful", false);
+        try {
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                dumpResponse(connection, "SUCCESS: snapshotting was successful", false);
 
-            return new SnapshotResult(getResponse(connection), getResponseHeaders(connection));
-        } else {
-            dumpResponse(connection, "ERROR: snapshotting failed", true);
+                return new SnapshotResult(getResponse(connection), getResponseHeaders(connection));
+            } else {
+                dumpResponse(connection, "ERROR: snapshotting failed", true);
+                return null;
+            }
+        } catch (SocketTimeoutException e) {
+            log.log(logLevel, "ERROR: snapshot request timed out");
             return null;
         }
-
     }
 
     private static void copyRequestHeaders(HttpURLConnection connection, Map<String, List<String>> headers) {
@@ -102,7 +106,7 @@ public abstract class BaseSnapshotService implements SnapshotService {
     }
 
 
-    private void dump(HttpURLConnection connection) {
+    private void dumpRequest(HttpURLConnection connection) {
         if (log.isLoggable(logLevel)) {
             StringBuilder output = new StringBuilder();
             output.append("  GET " + connection.getURL() + "\n");
@@ -146,22 +150,5 @@ public abstract class BaseSnapshotService implements SnapshotService {
             mergedValue.append(headerValue);
         }
         return mergedValue.toString();
-    }
-
-    // TODO(avaliani): move to a utility class
-    public static String encodeURIComponent(String s) {
-        String result;
-        try {
-            result = URLEncoder.encode(s, "UTF-8")
-                    .replaceAll("\\+", "%20")
-                    .replaceAll("\\%21", "!")
-                    .replaceAll("\\%27", "'")
-                    .replaceAll("\\%28", "(")
-                    .replaceAll("\\%29", ")")
-                    .replaceAll("\\%7E", "~");
-        } catch (UnsupportedEncodingException e) {
-            result = s;
-        }
-        return result;
     }
 }

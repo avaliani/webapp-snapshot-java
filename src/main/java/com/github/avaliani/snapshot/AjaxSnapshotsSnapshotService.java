@@ -16,23 +16,22 @@ import com.google.common.collect.Maps;
  */
 public class AjaxSnapshotsSnapshotService extends BaseSnapshotService {
 
-    // TODO(avaliani): debugging therefore using http
     public static final String DEFAULT_SERVICE_URL = "http://api.ajaxsnapshots.com/makeSnapshot";
 
     @Override
-    public String getDefaultServiceUrl() {
+    protected String getDefaultServiceUrl() {
         return DEFAULT_SERVICE_URL;
     }
 
     @Override
-    public String getRequestUrl(String requestUrl) {
+    protected String getRequestUrl(String requestUrl) {
         String baseUrl = getServiceUrl();
-        baseUrl += "?url=" + encodeURIComponent(requestUrl);
+        baseUrl += "?url=" + UriUtil.encodeURIComponent(requestUrl);
         return baseUrl;
     }
 
     @Override
-    public Map<String, List<String>> getRequestHeaders(String requestUrl) {
+    protected Map<String, List<String>> getRequestHeaders(String requestUrl) {
         Map<String, List<String>> headers = Maps.newHashMap();
 
         String serviceToken = config.getServiceToken();

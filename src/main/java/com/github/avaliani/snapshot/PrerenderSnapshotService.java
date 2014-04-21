@@ -21,16 +21,15 @@ public class PrerenderSnapshotService extends BaseSnapshotService {
      * to also support the explicit version: https://prerender.io/getting-started#api-recache.
      */
 
-    // TODO(avaliani): debugging therefore using http
     public static final String DEFAULT_SERVICE_URL = "http://service.prerender.io/";
 
     @Override
-    public String getDefaultServiceUrl() {
+    protected String getDefaultServiceUrl() {
         return DEFAULT_SERVICE_URL;
     }
 
     @Override
-    public String getRequestUrl(String requestUrl) {
+    protected String getRequestUrl(String requestUrl) {
         String prerenderServiceUrl = getServiceUrl();
         if (!prerenderServiceUrl.endsWith("/")) {
             prerenderServiceUrl += "/";
@@ -39,7 +38,7 @@ public class PrerenderSnapshotService extends BaseSnapshotService {
     }
 
     @Override
-    public Map<String, List<String>> getRequestHeaders(String requestUrl) {
+    protected Map<String, List<String>> getRequestHeaders(String requestUrl) {
         Map<String, List<String>> headers = Maps.newHashMap();
 
         String serviceToken = config.getServiceToken();
