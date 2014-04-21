@@ -6,7 +6,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>webapp-snapshot-java</name>
+    <name>Web Application Snapshot Middleware and API</name>
     <description>
         Java middleware and direct invocation api for web page snapshotting services used
         to make javascript rendered web pages crawlable / parseable by bots.
@@ -21,18 +21,19 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <id>avaliani</id>
+            <name>Amir Valiani</name>
+            <organizationUrl>https://github.com/avaliani</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:avaliani/webapp-snapshot-java.git</connection>
         <developerConnection>scm:git:git@github.com:avaliani/webapp-snapshot-java.git</developerConnection>
         <url>git@github.com:avaliani/webapp-snapshot-java.git</url>
     </scm>
-
-    <developers>
-        <developer>
-            <id>avaliani</id>
-            <name>Amir Valiani</name>
-        </developer>
-    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -176,6 +177,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
