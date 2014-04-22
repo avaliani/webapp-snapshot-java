@@ -38,11 +38,7 @@ The code is based upon https://github.com/greengerong/prerender-java. The ways i
 
 #### Installing the servlet filter 
 
-[1] Add the jar files++ to your project. Right now I'm using "mvn install" to install the jars locally. And then "mvn install:install-file" to add the jar files to my dependent maven project. (Let me know if there is a better way)
-
-If requested I will try and put it on maven central.
-
-[2] Modify your pom.xml
+[1] Modify your pom.xml
 
     <dependency>
       <groupId>com.github.avaliani.snapshot</groupId>
@@ -50,7 +46,7 @@ If requested I will try and put it on maven central.
       <version>1.0</version>
     </dependency>
 
-[3] Modify your web.xml (you will probably want to add this filter prior to all other filters)
+[2] Modify your web.xml (you will probably want to add this filter prior to all other filters)
 
     <filter>
         <filter-name>SeoFilter</filter-name>
@@ -60,8 +56,8 @@ If requested I will try and put it on maven central.
             <param-value>com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService</param-value>
         </init-param>
         <init-param>
-            <param-name>snapshotServiceTokenProvider</param-name>
-            <param-value>{your-token-provider-class-path}</param-value>
+            <param-name>snapshotServiceToken</param-name>
+            <param-value>{token}</param-value>
         </init-param>
     </filter>
     <filter-mapping>
